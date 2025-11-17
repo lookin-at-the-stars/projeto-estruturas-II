@@ -96,12 +96,15 @@ public class PerformanceAnalysis {
         
         long totalTime = 0;
         
+        // Como ABB não tem método de busca explícito, simular buscas
+        // fazendo percursos limitados (não imprime na tela)
         for (int i = 0; i < 3; i++) {
             long startTime = System.nanoTime();
             
             for (Game game : searchItems) {
-                // Busca implícita (não há método de busca explícito na ABB)
-                abb.emOrdem(); // Simulação de operação de busca
+                // Simular busca - na prática seria um método search
+                // Aqui apenas medimos o tempo de acesso
+                searchInABB(abb.getRaiz(), game);
             }
             
             long endTime = System.nanoTime();
@@ -112,6 +115,16 @@ public class PerformanceAnalysis {
         metrics.comparisons = estimateSearchComparisons(searchItems.size(), false);
         
         return metrics;
+    }
+    
+    // Método auxiliar para buscar na ABB sem imprimir
+    private static boolean searchInABB(Node<Game> node, Game target) {
+        if (node == null) return false;
+        
+        int cmp = target.compareTo(node.getValue());
+        if (cmp == 0) return true;
+        if (cmp < 0) return searchInABB(node.getFilhoEsq(), target);
+        return searchInABB(node.getFilhoDir(), target);
     }
     
     // Análise de busca em AVL
