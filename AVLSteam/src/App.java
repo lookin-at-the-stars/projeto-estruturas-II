@@ -305,51 +305,79 @@ public class App {
         System.out.println("REMOVER JOGO");
         System.out.println("═══════════════════════════════════════════════");
         
-        System.out.print("Digite a média de jogadores do jogo a remover: ");
-        try {
-            double avgPlayers = scanner.nextDouble();
-            scanner.nextLine();
-            
-            // Buscar jogo com essa média
-            Game toRemove = null;
-            for (Game g : allGames) {
-                if (Math.abs(g.getAvgPlayers() - avgPlayers) < 0.01) {
-                    toRemove = g;
-                    break;
-                }
+        System.out.print("Digite o nome do jogo a remover: ");
+        String gameName = scanner.nextLine().trim();
+        
+        if (gameName.isEmpty()) {
+            System.out.println("Nome inválido!");
+            return;
+        }
+        
+        // Buscar jogos com esse nome (pode haver múltiplos registros)
+        List<Game> matchingGames = new ArrayList<>();
+        for (Game g : allGames) {
+            if (g.getName().equalsIgnoreCase(gameName)) {
+                matchingGames.add(g);
             }
+        }
+        
+        if (matchingGames.isEmpty()) {
+            System.out.println("Jogo não encontrado com esse nome!");
+            System.out.println("Dica: Use a opção 3 do menu para buscar jogos disponíveis.");
+            return;
+        }
+        
+        // Se houver múltiplos registros, mostrar lista e pedir seleção
+        Game toRemove = null;
+        if (matchingGames.size() == 1) {
+            toRemove = matchingGames.get(0);
+            System.out.println("\nJogo encontrado: " + toRemove);
+        } else {
+            System.out.println("\nEncontrados " + matchingGames.size() + " registros para este jogo:");
+            for (int i = 0; i < matchingGames.size(); i++) {
+                System.out.printf("%d. %s\n", i+1, matchingGames.get(i));
+            }
+            System.out.print("\nEscolha o número do registro a remover (1-" + matchingGames.size() + "): ");
             
-            if (toRemove == null) {
-                System.out.println("Jogo não encontrado com essa média!");
+            try {
+                int choice = scanner.nextInt();
+                scanner.nextLine(); // Limpar buffer
+                
+                if (choice < 1 || choice > matchingGames.size()) {
+                    System.out.println("Opção inválida!");
+                    return;
+                }
+                
+                toRemove = matchingGames.get(choice - 1);
+            } catch (InputMismatchException e) {
+                System.out.println("Entrada inválida!");
+                scanner.nextLine();
                 return;
             }
+        }
+        
+        System.out.print("Confirma remoção? (S/N): ");
+        String confirm = scanner.nextLine();
+        
+        if (confirm.equalsIgnoreCase("S")) {
+            long startABB = System.nanoTime();
+            boolean removedABB = abbTree.eliminar(toRemove);
+            long endABB = System.nanoTime();
             
-            System.out.println("Jogo encontrado: " + toRemove);
-            System.out.print("Confirma remoção? (S/N): ");
-            String confirm = scanner.nextLine();
+            long startAVL = System.nanoTime();
+            boolean removedAVL = avlTree.removeAVL(toRemove);
+            long endAVL = System.nanoTime();
             
-            if (confirm.equalsIgnoreCase("S")) {
-                long startABB = System.nanoTime();
-                boolean removedABB = abbTree.eliminar(toRemove);
-                long endABB = System.nanoTime();
-                
-                long startAVL = System.nanoTime();
-                boolean removedAVL = avlTree.removeAVL(toRemove);
-                long endAVL = System.nanoTime();
-                
-                if (removedABB && removedAVL) {
-                    allGames.remove(toRemove);
-                    System.out.println("\n✓ Jogo removido com sucesso!");
-                    System.out.printf("  Tempo ABB: %.3f µs\n", (endABB - startABB) / 1000.0);
-                    System.out.printf("  Tempo AVL: %.3f µs\n", (endAVL - startAVL) / 1000.0);
-                } else {
-                    System.out.println("Erro ao remover jogo!");
-                }
+            if (removedABB && removedAVL) {
+                allGames.remove(toRemove);
+                System.out.println("\n✓ Jogo removido com sucesso!");
+                System.out.printf("  Tempo ABB: %.3f µs\n", (endABB - startABB) / 1000.0);
+                System.out.printf("  Tempo AVL: %.3f µs\n", (endAVL - startAVL) / 1000.0);
+            } else {
+                System.out.println("Erro ao remover jogo!");
             }
-            
-        } catch (InputMismatchException e) {
-            System.out.println("Erro: Valor inválido!");
-            scanner.nextLine();
+        } else {
+            System.out.println("Remoção cancelada.");
         }
     }
     

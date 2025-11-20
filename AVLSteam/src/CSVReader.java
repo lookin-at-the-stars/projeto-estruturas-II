@@ -41,9 +41,9 @@ public class CSVReader {
                         Game game = new Game(month, avgPlayers, gain, gainPercent, 
                                            peakPlayers, name, steamAppid);
                         games.add(game);
-                    } catch (NumberFormatException e) {
-                        System.err.println("Erro ao processar linha: " + line);
-                        // Continua processando as outras linhas
+                    } catch (Exception e) {
+                        // Silenciosamente ignora linhas com problemas
+                        // System.err.println("Erro ao processar linha: " + line);
                     }
                 }
             }
@@ -58,23 +58,31 @@ public class CSVReader {
     }
     
     /**
-     * Converte string para double, tratando valores vazios
+     * Converte string para double, tratando valores vazios e caracteres especiais
      */
     private static double parseDouble(String value) {
-        if (value == null || value.trim().isEmpty()) {
+        if (value == null || value.trim().isEmpty() || value.trim().equals("-")) {
             return 0.0;
         }
-        return Double.parseDouble(value.trim());
+        try {
+            return Double.parseDouble(value.trim());
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
     }
     
     /**
-     * Converte string para int, tratando valores vazios
+     * Converte string para int, tratando valores vazios e caracteres especiais
      */
     private static int parseInt(String value) {
-        if (value == null || value.trim().isEmpty()) {
+        if (value == null || value.trim().isEmpty() || value.trim().equals("-")) {
             return 0;
         }
-        return Integer.parseInt(value.trim());
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
     
     /**

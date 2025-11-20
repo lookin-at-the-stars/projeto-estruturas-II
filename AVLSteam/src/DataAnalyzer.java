@@ -64,13 +64,23 @@ public class DataAnalyzer {
         System.out.printf("Percentual: %.2f%%\n", (highPerformers.size() * 100.0 / allGames.size()));
         System.out.printf("Estimativa de engajamento total: %.2f\n", totalRevenue);
         
-        // Top 5 jogos
+        // Top 5 jogos com nomes únicos
         highPerformers.sort((g1, g2) -> Double.compare(g2.getAvgPlayers(), g1.getAvgPlayers()));
-        System.out.println("\nTop 5 jogos mais populares:");
-        for (int i = 0; i < Math.min(5, highPerformers.size()); i++) {
-            Game g = highPerformers.get(i);
-            System.out.printf("%d. %s - %.2f jogadores (Pico: %d)\n", 
-                            i+1, g.getName(), g.getAvgPlayers(), g.getPeakPlayers());
+        
+        System.out.println("\n📝 NOTA: O dataset contém múltiplos registros do mesmo jogo");
+        System.out.println("(um para cada mês). Mostrando apenas jogos com nomes únicos:\n");
+        
+        System.out.println("Top 5 jogos mais populares (nomes únicos):");
+        Set<String> uniqueNames = new HashSet<>();
+        int count = 0;
+        for (Game g : highPerformers) {
+            if (!uniqueNames.contains(g.getName())) {
+                uniqueNames.add(g.getName());
+                count++;
+                System.out.printf("%d. %s - %.2f jogadores (Pico: %d) - Mês: %s\n", 
+                                count, g.getName(), g.getAvgPlayers(), g.getPeakPlayers(), g.getMonth());
+                if (count >= 5) break;
+            }
         }
         System.out.println("========================================\n");
     }
@@ -193,13 +203,24 @@ public class DataAnalyzer {
         
         exceptionalPeaks.sort((g1, g2) -> Integer.compare(g2.getPeakPlayers(), g1.getPeakPlayers()));
         
-        System.out.println("Total de jogos com picos excepcionais: " + exceptionalPeaks.size());
-        System.out.println("\nTop 10 maiores picos:");
-        for (int i = 0; i < Math.min(10, exceptionalPeaks.size()); i++) {
-            Game g = exceptionalPeaks.get(i);
-            double peakRatio = g.getPeakPlayers() / g.getAvgPlayers();
-            System.out.printf("%d. %s - Pico: %d jogadores (%.1fx a média) - %s\n", 
-                            i+1, g.getName(), g.getPeakPlayers(), peakRatio, g.getMonth());
+        System.out.println("Total de registros com picos excepcionais: " + exceptionalPeaks.size());
+        
+        System.out.println("\n📝 NOTA: O dataset contém múltiplos registros do mesmo jogo");
+        System.out.println("(um para cada mês). Mostrando apenas jogos com nomes únicos:");
+        System.out.println("Isso permite ver a DIVERSIDADE de jogos que atingiram picos altos.\n");
+        
+        System.out.println("Top 10 maiores picos (jogos únicos):");
+        Set<String> uniqueNames = new HashSet<>();
+        int count = 0;
+        for (Game g : exceptionalPeaks) {
+            if (!uniqueNames.contains(g.getName())) {
+                uniqueNames.add(g.getName());
+                count++;
+                double peakRatio = g.getPeakPlayers() / g.getAvgPlayers();
+                System.out.printf("%d. %s - Pico: %d jogadores (%.1fx a média) - %s\n", 
+                                count, g.getName(), g.getPeakPlayers(), peakRatio, g.getMonth());
+                if (count >= 10) break;
+            }
         }
         System.out.println("========================================\n");
     }
